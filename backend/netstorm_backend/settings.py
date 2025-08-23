@@ -11,6 +11,10 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-purk56=&in446n7o0%h2oj_zr)xnk5i38gqz6#h^t)wa3%!2g+'
+SECRET_KEY = os.getenv('default_key')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -74,8 +78,12 @@ WSGI_APPLICATION = 'netstorm_backend.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': os.getenv('engine'),
+        'NAME': os.getenv('name'),
+        'USER': os.getenv('user'),
+        'PASSWORD': os.getenv('password'),
+        'HOST': os.getenv('host'),
+        'PORT': os.getenv('port'),
     }
 }
 
