@@ -45,7 +45,8 @@ INSTALLED_APPS = [
     'attacks',
     #3rd party apps
     'rest_framework',
-    "django_filters"
+    "django_filters",
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
@@ -56,7 +57,10 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 ]
+
+CORS_ORIGIN_ALLOW_ALL = True
 
 ROOT_URLCONF = 'netstorm_backend.urls'
 
