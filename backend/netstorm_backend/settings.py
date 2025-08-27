@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'rest_framework',
     "django_filters",
     'corsheaders',
+    'channels'
 ]
 
 MIDDLEWARE = [
@@ -80,6 +81,13 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'netstorm_backend.wsgi.application'
+ASGI_APPLICATION = 'netstorm_backend.asgi.application'
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer'
+    }
+}
 
 # Rest Framework Configuration
 REST_FRAMEWORK = {

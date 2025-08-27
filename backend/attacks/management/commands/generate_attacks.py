@@ -2,6 +2,8 @@ import random
 from django.core.management.base import BaseCommand
 from attacks.models import AttackSession
 from django.db import connection
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
 
 ATTACK_TYPES = ['DDoS', 'Phishing', 'Malware', 'Ransomware', 'SQL Injection', 'Exploit', 'Worm']
 
@@ -22,6 +24,25 @@ def ip_to_location(ip):
             return row[0], row[1]
         
         return 0.0, 0.0
+
+def broadcast_attack(attack):
+    channel_layer = get_channel_layer()
+    async_to_sync(channel_layer.group_send)(
+        'attacks',
+        {
+            'type': 'new_attack',
+            'attack': {
+                'id': attack.id,
+                'source_ip': attack.source_ip,
+                'target_ip': attack.target_ip,
+                'attack_type': attack.attack_type,
+                'source_lat': attack.source_lat,
+                'source_lon': attack.source_lon,
+                'target_lat': attack.target_lat,
+                'target_lon': attack.target_lon
+            }
+        }
+    )
 
 
 class Command(BaseCommand):
@@ -44,7 +65,7 @@ class Command(BaseCommand):
             
             attack_type = random.choice(ATTACK_TYPES)
             
-            AttackSession.objects.create(
+            attack = AttackSession.objects.create(
                 source_ip=source_ip,
                 source_lat=src_lat,
                 source_lon=src_lon,
@@ -55,5 +76,7 @@ class Command(BaseCommand):
                 
                 attack_type=attack_type
             )
+            
+            broadcast_attack(attack)
             
         self.stdout.write(self.style.SUCCESS(f'Successfully created {count} attack sessions'))
