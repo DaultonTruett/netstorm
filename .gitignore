@@ -205,6 +205,10 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 
+# Celery
+celerybeat-schedule
+celerybeat-schedule.*
+
 
 
 # ----- React ----- #

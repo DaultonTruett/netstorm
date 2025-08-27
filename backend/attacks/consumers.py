@@ -13,5 +13,5 @@ class AttackConsumer(AsyncWebsocketConsumer):
         pass
     
     async def new_attack(self, event):
-        await self.send(text_data=json.dumps(event['attack']))
+        await self.send_json(event)
         
