@@ -28,19 +28,19 @@ def generate_attack():
         'attacks',
         {
             'type': 'new_attack',
-            'attack': {
-                'id': attack.id,
+
+            'id': attack.id,
                 
-                'source_ip': attack.source_ip,
-                'source_lat': attack.source_lat,
-                'source_lon': attack.source_lon,
-                
-                'target_ip': attack.target_ip,
-                'target_lat': attack.target_lat,
-                'target_lon': attack.target_lon,
-                
-                'attack_type': attack.attack_type,
-            }
+            'source_ip': attack.source_ip,
+            'source_lat': attack.source_lat,
+            'source_lon': attack.source_lon,
+            
+            'target_ip': attack.target_ip,
+            'target_lat': attack.target_lat,
+            'target_lon': attack.target_lon,
+            
+            'attack_type': attack.attack_type,
+
         }
     )
     
