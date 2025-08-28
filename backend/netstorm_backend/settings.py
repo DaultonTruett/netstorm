@@ -48,7 +48,8 @@ INSTALLED_APPS = [
     'rest_framework',
     "django_filters",
     'corsheaders',
-    'channels'
+    'channels',
+    'daphne'
 ]
 
 MIDDLEWARE = [
@@ -86,7 +87,10 @@ ASGI_APPLICATION = 'netstorm_backend.asgi.application'
 
 CHANNEL_LAYERS = {
     'default': {
-        'BACKEND': 'channels.layers.InMemoryChannelLayer'
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            'hosts': [('127.0.0.1', 6379)]
+        }
     }
 }
 
