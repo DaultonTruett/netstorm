@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { MapContainer, TileLayer, Polyline, Tooltip, CircleMarker } from "react-leaflet";
-import axios from "axios";
+
+import AttackWebSocket from "./AttackWebSocket";
 
 const ATTACK_COLOR = {
     "DDoS": "red",
@@ -14,37 +15,17 @@ const ATTACK_COLOR = {
 
 
 function AttackMap() {
-    const [attacks, setAttacks] = useState([]);
     const [activeAttacks, setActiveAttacks] = useState([]);
     const [attackFeed, setAttackFeed] = useState([]);
 
-    useEffect( () => {
-        axios.get('http://localhost:8000/api/attacks/?limit=50')
-        .then( (res) => {
-            setAttacks(res.data.results || res.data)
-        })
-        .catch( (err) => console.error(err) );
-    }, []);
+    const handleAttack = (newAttack) => {
+        setActiveAttacks((prev) => [
+            ...prev, {...newAttack, progress: 0}
+        ]);
 
-
-    useEffect ( () => {
-        if (attacks.length === 0) return;
-
-        const createInterval = setInterval( () => {
-            const newAttack = attacks[Math.floor(Math.random() * attacks.length)];
-            setActiveAttacks( (prev) => [
-                ...prev,
-                {...newAttack, progress: 0}
-            ]);
-
-            setAttackFeed ( (prev) => [
-                newAttack, ...prev
-            ])
-        }, 5000);
-
-        return () => clearInterval(createInterval);
-    }, [attacks]);
-
+        setAttackFeed( (prev) => [newAttack, ...prev])
+        console.log(activeAttacks)
+    };
 
     useEffect( () => {
         const animationInterval = setInterval( () => {
@@ -72,6 +53,8 @@ function AttackMap() {
 
     return (
         <div style={{display: "flex", height: "100vh", width: "100vw"}}>
+            <AttackWebSocket onNewAttack={handleAttack}/>
+            
             <div style={{flex: 3}}>
                 <MapContainer center={[20, 0]} zoom={2} minZoom={2} maxBounds={[[-90, -180], [90, 180]]} maxBoundsViscosity={1.0} worldCopyJump={false} style={{ height: '100%', width: '100%'}}>
                 <TileLayer
