@@ -1,24 +1,27 @@
 import random
 from celery import shared_task
-from .models import AttackSession
+from .models import AttackSession, GeoIP_Network
 from faker import Faker
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
+from django.db import connection
 
 ATTACK_TYPES = ['DDoS', 'Phishing', 'Malware', 'Ransomware', 'SQL Injection', 'Exploit', 'Worm']
 
 @shared_task
-def generate_attack():
+def generate_attack():        
     faker = Faker()
+    source = GeoIP_Network.objects.order_by('?').first()
+    target = GeoIP_Network.objects.order_by('?').first()
     
     attack = AttackSession.objects.create(
         source_ip = faker.ipv4(),
-        source_lat = float(faker.latitude()),
-        source_lon = float(faker.longitude()),
+        source_lat = float(source.latitude),
+        source_lon = float(source.longitude),
         
         target_ip = faker.ipv4(),
-        target_lat = float(faker.latitude()),
-        target_lon = float(faker.longitude()),
+        target_lat = float(target.latitude),
+        target_lon = float(target.longitude),
         
         attack_type = random.choice(ATTACK_TYPES)
     );
@@ -27,10 +30,9 @@ def generate_attack():
     async_to_sync(channel_layer.group_send)(
         'attacks',
         {
-            'type': 'new_attack',
-
             'id': attack.id,
-                
+            'type': 'new_attack',
+            
             'source_ip': attack.source_ip,
             'source_lat': attack.source_lat,
             'source_lon': attack.source_lon,
