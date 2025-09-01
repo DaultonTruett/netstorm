@@ -27,3 +27,23 @@ class AttackSession(models.Model):
 
     def __str__(self):
         return f"{self.attack_type} from {self.source_ip} to {self.target_ip} started at {self.start_time}"
+    
+
+class GeoIP_Network(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    network = models.TextField()
+    geoname_id = models.IntegerField()
+    registered_country_geoname_id = models.IntegerField()
+    represented_country_geoname_id = models.IntegerField()
+    is_anonymous_proxy = models.BooleanField()
+    is_satellite_provider = models.BooleanField()
+    postal_code = models.TextField()
+    latitude = models.FloatField()
+    longitude = models.FloatField()
+    accuracy_radius = models.IntegerField()
+    is_anycast = models.BooleanField()
+    
+    class Meta:
+        db_table = 'geoip2_network'
+        managed = False
+    
