@@ -1,0 +1,4 @@
+.glow-arc {
+    filter: blur(4px);
+    opacity: 0.6;
+}
