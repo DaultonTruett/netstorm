@@ -20,14 +20,34 @@ function AttackMap() {
     const [attackFeed, setAttackFeed] = useState([]);
     const [pulses, setPulses] = useState([]);
 
+    const [paused, setPaused] = useState(false);
+    const [speed, setSpeed] = useState(1.0);
+    const [maxArcs, setMaxArcs] = useState(50);
+    const [filters, setFilters] = useState({
+        "DDoS": true,
+        "SQL Injection": true,
+        "Worm": true,
+        "Phishing": true,
+        "Malware": true,
+        "Exploit": true,
+        "Ransomware": true
+    });
+
     const handleAttack = (newAttack) => {
-        setActiveAttacks((prev) => [...prev, {...newAttack, progress: 0, fade: 0, pulsed: false, tail: 0}]);
         setAttackFeed( (prev) => [newAttack, ...prev])
         //console.log(activeAttacks)
+
+        setActiveAttacks((prev) => {
+            const next = [...prev, {...newAttack, progress: 0, fade: 0, pulsed: false, tail: 0}
+            ];
+            return next.length > maxArcs ? next.slice(next.length - maxArcs) : next;
+        });
     };
 
     useEffect( () => {
         const animationInterval = setInterval( () => {
+            if (paused) return;
+
             setActiveAttacks( (prev) =>
                 prev.map( (a) => {
                     let updatedProgress = a.progress
@@ -35,12 +55,12 @@ function AttackMap() {
                     let updatedTail = a.tail ?? 0;
 
                     if (updatedProgress < 1){
-                        updatedProgress += 0.02
-                        updatedFade = Math.min(1, updatedFade + 0.05)
+                        updatedProgress += 0.02 * speed;
+                        updatedFade = Math.min(1, updatedFade + 0.05 * speed);
 
                     } else{
-                        updatedTail += 0.03;
-                        updatedFade = (a.fade ?? 1) - 0.03;
+                        updatedTail += 0.03 * speed
+                        updatedFade = (a.fade ?? 1) - 0.03 * speed;;
 
                         if (!a.pulsed){
                             setPulses((prev) => [
@@ -60,14 +80,14 @@ function AttackMap() {
             setPulses((prev) => 
                 prev.map((p) => ({
                     ...p,
-                    progress: p.progress + 0.08, fade: (p.fade ?? 1) - 0.05
+                    progress: p.progress + 0.08 * speed, fade: (p.fade ?? 1) - 0.05 * speed
                 }))
                 .filter((p) => (p.fade ?? 1) > 0)
             );
         }, 25);
 
         return () => clearInterval(animationInterval);
-        }, []);
+        }, [paused, speed]);
 
 
     const createArc = ([lat1, lon1], [lat2, lon2], segments=30) => {
@@ -84,7 +104,7 @@ function AttackMap() {
 
 
     return (
-        <div style={{display: "flex", height: "100vh", width: "100vw"}}>
+        <div style={{display: "flex", position: "relative", height: "100vh", width: "100vw"}}>
             <AttackWebSocket onNewAttack={handleAttack}/>
             
             <div style={{flex: 3}}>
@@ -95,7 +115,9 @@ function AttackMap() {
                     maxZoom={16}
                     />
                 
-                {activeAttacks.map ((attacks, i) => {
+                {activeAttacks
+                    .filter( (attacks) => !!filters[attacks.attack_type])
+                    .map ((attacks, i) => {
                     const arc = createArc(
                         [attacks.source_lat, attacks.source_lon],
                         [attacks.target_lat, attacks.target_lon],
@@ -170,6 +192,79 @@ function AttackMap() {
                         </div>
                     </div>
                 ))}
+            </div>
+            <div style={{
+                position: "absolute",
+                bottom: "20px",
+                left: "20px",
+                zIndex: 1000,
+                background: "rgba(20,20,20,0.6)",
+                padding: "0.5rem",
+                borderRadius: "12px",
+                backdropFilter: "blur(8px)",
+                width: "250px"
+            }}>
+                <div style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    marginBottom: "0.5rem"
+                }}>
+                    <strong style={{color:"white"}}>Controls</strong>
+                    <button onClick={() => setPaused(!paused)}
+                        style={{background: paused ? "#444" : "#0ea5e9", color:"#fff", border: "none", padding: "6px 10px", borderRadius: "6px", cursor: "pointer"}}>
+                        {paused ? "Resume" : "Pause"}
+                    </button>
+                </div>
+
+                <div style={{marginBottom: "0.5rem"}}>
+                    <label style={{fontSize: "12px", opacity: 0.8, color: "white"}}>Speed:</label>
+                    <input type="range" min="0.5" max="3" step="0.1" value={speed}
+                    onChange={(e) => setSpeed(parseFloat(e.target.value))}
+                    style={{width: "100%"}}/>
+                </div>
+
+                <div style={{marginBottom: "0.5rem"}}>
+                    <label style={{fontSize: "12px", opacity: 0.8, color: "white"}}>Max Arcs:</label>
+                    <input type="number" min="10" max="50" value={maxArcs}
+                        onChange={(e) => {
+                            const val = parseInt(e.target.value || "0", 10);
+                            setMaxArcs(Math.max(10, Math.min(50, val)));
+                        }}
+                        style={{width: 80, marginLeft: "0.5rem"}}/>
+                    <button onClick={() => {setActiveAttacks([]); setPulses([]); }}
+                        style={{marginLeft: 12, background:"#444", color:"#fff", border:"none", padding:"4px 8px", borderRadius:8, cursor:"pointer"}}>
+                        Clear
+                    </button>
+                </div>
+
+                <div>
+                    <div style={{display:"flex", justifyContent:"space-between", marginBottom:"0.25rem"}}>
+                        <span style={{fontSize:12, opacity: 0.8, color: "white"}}>Filters</span>
+                        <div style={{display:"flex", gap:"6"}}>
+                            <button onClick={() => setFilters(Object.fromEntries(Object.keys(filters).map((k) => [k, true])))}
+                                style={{fontSize:12}}>
+                                All
+                            </button>
+                            <button onClick={() => setFilters(Object.fromEntries(Object.keys(filters).map((k) => [k, false])))}
+                                style={{fontSize:12}}>
+                                None
+                            </button>
+                        </div>
+                    </div>
+                    <div style={{display:"grid", gridTemplateColumns:"1fr 1fr", gap:6}}>
+                        {Object.keys(filters).map( (type) => (
+                            <label key={type} style={{fontSize:12, display:"flex", alignItems:"center", gap:6, color: "white",}}>
+                                <input type="checkbox"
+                                    checked={!!filters[type]}
+                                    onChange={() => setFilters((prev) => ({...prev, [type]: !prev[type]}))}
+                                />
+                                <span style={{width: 10, height:10, borderRadius: 10, background: ATTACK_COLOR[type] || "white", display:"inline-block"}}/>
+                                {type}
+                            </label>
+                        ))}
+                    </div>
+                </div>
             </div>
         </div>
     );
