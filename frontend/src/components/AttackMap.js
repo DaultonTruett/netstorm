@@ -3,6 +3,7 @@ import { MapContainer, TileLayer, Polyline, Tooltip, CircleMarker, Popup } from 
 import "./AttackMap.css"
 
 import AttackWebSocket from "./AttackWebSocket";
+import AttackDetailsModal from "./AttackDetailsModal";
 
 const ATTACK_COLOR = {
     "DDoS": "crimson",
@@ -19,6 +20,7 @@ function AttackMap() {
     const [activeAttacks, setActiveAttacks] = useState([]);
     const [attackFeed, setAttackFeed] = useState([]);
     const [pulses, setPulses] = useState([]);
+    const [selectedAttack, setSelectedAttack] = useState(null);
 
     const [paused, setPaused] = useState(false);
     const [speed, setSpeed] = useState(1.0);
@@ -178,12 +180,16 @@ function AttackMap() {
                 })};
                 </MapContainer>
             </div>
+            <AttackDetailsModal attack={selectedAttack} onClose={() => setSelectedAttack(null)} />
             <div style={{flex: 1, background:"#111", color: "white", padding: "1rem", overflowY: "scroll", maxHeight: "100vh"}}>
                 <h2 style={{borderBottom: "1px solid gray", paddingBottom: "0.5rem"}}>
                     Log
                 </h2>
                 {attackFeed.map( (a, i) => (
-                    <div key={i} style={{borderBottom: "1px solid #333", padding: "0.5 rem 0"}}>
+                    <div key={i} style={{borderBottom: "1px solid #333", padding: "0.5 rem 0", cursor: "pointer"}}
+                        onClick={() => setSelectedAttack(a)}
+                        onMouseEnter={ (e) => (e.currentTarget.style.background = "rgba(255,255,255,0.1)")}
+                        onMouseLeave={ (e) => (e.currentTarget.style.background = "transparent")}>
                         <strong style={{color: ATTACK_COLOR[a.attack_type] || "white"}}>
                             {a.attack_type}
                         </strong>
