@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { MapContainer, TileLayer, Polyline, Tooltip, CircleMarker, Popup } from "react-leaflet";
-import "./AttackMap.css"
+import "../assets/styles/AttackMap.css"
 
-import AttackWebSocket from "./AttackWebSocket";
+import AttackWebSocket from "../services/AttackWebSocket";
 import AttackDetailsModal from "./AttackDetailsModal";
 
 const ATTACK_COLOR = {

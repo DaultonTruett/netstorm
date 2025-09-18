@@ -1,5 +1,5 @@
 import React from 'react';
-import './AttackDetailsModal.css'
+import '../assets/styles/AttackDetailsModal.css';
 
 export default function AttackDetailsModal({ attack, onClose }) {
     if (!attack) return null;
